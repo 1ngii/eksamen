@@ -346,8 +346,6 @@ function h_add_cart_items($cart_item_data)
 
         // Attach the subscription data to the cart item
         $cart_item_data['subscription_data'] = $subscription_data;
-        // Optionally log the subscription data for debugging purposes
-        error_log(print_r($subscription_data, true));
         // Store the subscription data in the session for later use
         WC()->session->set('subscription_data', $subscription_data);
     }
@@ -415,15 +413,13 @@ function setup_recurring_billing($order_id)
         // If subscription data exists, call the recurring billing setup function
         if ($subscription_period && $subscription_price) {
             handle_recurring_billing($order_id, $subscription_period, $subscription_price, $is_subscription_order);
-            // Log message for debugging purposes
-            error_log('handle_recurring billing fired');
         }
     }
 }
 
 // Function that handles the recurring billing setup for the order
 function handle_recurring_billing($order_id, $subscription_period, $subscription_price, $is_subscription_order)
-{
+{   
     // Calculate the next payment date based on the subscription period
     $next_payment_date = calculate_next_payment_date($subscription_period);
 
@@ -435,7 +431,7 @@ function handle_recurring_billing($order_id, $subscription_period, $subscription
 }
 
 // Function to calculate the next payment date based on the subscription period
-function calculate_next_payment_date($subscription_period)
+function calculate_next_payment_date($subscription_period,)
 {
     // Get the current time in timestamp format
     $current_time = current_time('timestamp');
@@ -468,34 +464,9 @@ function schedule_recurring_payment_task($order_id)
         // If no recurring payment is scheduled, schedule the next recurring payment event
         if (!$timestamp) {
             wp_schedule_single_event($next_payment_date, 'process_recurring_payment', array($order_id));
+            error_log("Scheduled next payment date for order #$order_id at: " . date('Y-m-d H:i:s', $next_payment_date));
         }
     }
-}
-
-// Hook to process recurring payment task when the scheduled event is triggered
-add_action('process_recurring_payment', 'process_recurring_payment_task', 10, 1);
-
-function process_recurring_payment_task($order_id)
-{
-    // Get the order object using the order ID
-    $order = wc_get_order($order_id);
-
-    // Retrieve subscription details from order metadata (subscription period and price)
-    $subscription_period = get_post_meta($order_id, '_subscription_period', true);
-    $subscription_price = get_post_meta($order_id, '_subscription_price', true);
-
-    // Log the processed payment for debugging
-    error_log("Processed payment of $subscription_price kr. for order #$order_id (Period: $subscription_period)");
-
-    // Calculate the next payment date based on the subscription period
-    $next_payment_timestamp = calculate_next_payment_date($subscription_period);
-    
-    // Update the order with the new next payment date
-    update_post_meta($order_id, '_next_payment_date', $next_payment_timestamp);
-    $next_payment_date = date('Y-m-d H:i:s', $next_payment_timestamp);
-
-    // Log the updated next payment date for debugging
-    error_log("Next payment date for order #$order_id is set to $next_payment_date");
 }
 
 // Hook to display subscription details in the admin order view
