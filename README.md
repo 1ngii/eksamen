@@ -13,3 +13,5 @@ define('DISABLE_WP_CRON', false);
 Hvis det enda ikke fungerer husk:
 wp cron event list
 wp cron event run 
+
+Husk også å sjekke tidssone på WP
