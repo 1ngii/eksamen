@@ -7,6 +7,7 @@ if ( ! defined( 'WP_DEBUG' ) ) {
 }
 
 og 
+
 define('DISABLE_WP_CRON', false);
 
 Hvis det enda ikke fungerer husk:
